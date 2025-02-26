@@ -1,190 +1,297 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Bucled - AI Services</title>
-  <style>
-    body { font-family: Arial, sans-serif; margin: 0; padding: 0; background: #f9f9f9; text-align: center; }
-    header { padding: 40px; background: #1a1a1a; color: white; }
-    h1 { margin: 0; font-size: 2.5em; }
-    p { font-size: 1.2em; }
-    .cta { margin: 30px; }
-    button { padding: 12px 24px; background: #ff5e00; color: white; border: none; font-size: 1.1em; cursor: pointer; }
-    button:hover { background: #e65100; }
-  </style>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.2/p5.min.js"></script>
-</head>
-<body>
-  <header>
-    <h1>Bucled</h1>
-    <p>Next-level AI for your business.</p>
-  </header>
-  <div class="cta">
-    <button onclick="alert('Contact us at hello@bucled.com!')">Learn More</button>
-  </div>
-  <script>
-    // Neural network animation for AI landing page
-    let particles = [];
-    let connections = [];
-    let nodeCount = 30;
-    let maxDistance = 150;
-    let mousePull = 100;
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Bucled - AI Business Solutions</title>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+      @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
-    function setup() {
-      createCanvas(windowWidth, windowHeight);
-      colorMode(HSB, 360, 100, 100, 1);
-      
-      // Create nodes
-      for (let i = 0; i < nodeCount; i++) {
-        particles.push({
-          position: createVector(random(width), random(height)),
-          velocity: createVector(random(-0.5, 0.5), random(-0.5, 0.5)),
-          size: random(4, 12),
-          color: color(random(180, 240), 80, 100),
-          pulsePhase: random(TWO_PI)
-        });
+      :root {
+        --blue-400: #60a5fa;
+        --purple-600: #9333ea;
+        --gray-300: #d1d5db;
+        --gray-400: #9ca3af;
+        --gray-600: #4b5563;
+        --gray-700: #374151;
+        --gray-800: #1f2937;
+        --gray-900: #111827;
+        --blue-600: #2563eb;
+        --blue-700: #1d4ed8;
+        --green-400: #4ade80;
       }
-    }
 
-    function draw() {
-      background(222, 30, 10);
-      
-      // Handle mouse interaction
-      let mousePos = createVector(mouseX, mouseY);
-      let mouseActive = mouseX > 0 && mouseX < width && mouseY > 0 && mouseY < height;
-      
-      // Update and draw connections first (behind nodes)
-      updateConnections(mousePos, mouseActive);
-      
-      // Update and draw nodes
-      for (let i = 0; i < particles.length; i++) {
-        let p = particles[i];
-        
-        // Apply mouse attraction/repulsion
-        if (mouseActive) {
-          let force = p5.Vector.sub(mousePos, p.position);
-          let distance = force.mag();
-          if (distance < mousePull) {
-            force.setMag(0.2);
-            // Pull if mouse is pressed, otherwise push
-            if (mouseIsPressed) {
-              p.velocity.add(force);
-            } else {
-              p.velocity.sub(force);
-            }
-          }
-        }
-        
-        // Update position
-        p.position.add(p.velocity);
-        
-        // Boundary check with bounce
-        if (p.position.x < 0 || p.position.x > width) {
-          p.velocity.x *= -1;
-          p.position.x = constrain(p.position.x, 0, width);
-        }
-        if (p.position.y < 0 || p.position.y > height) {
-          p.velocity.y *= -1;
-          p.position.y = constrain(p.position.y, 0, height);
-        }
-        
-        // Draw node with pulsing effect
-        let pulse = sin(frameCount * 0.05 + p.pulsePhase) * 0.5 + 0.5;
-        let size = p.size * (0.8 + pulse * 0.4);
-        
-        // Glow effect
-        noStroke();
-        for (let j = 0; j < 4; j++) {
-          let alpha = map(j, 0, 3, 0.1, 0);
-          fill(hue(p.color), saturation(p.color), brightness(p.color), alpha);
-          ellipse(p.position.x, p.position.y, size + j*8);
-        }
-        
-        // Main node
-        fill(p.color);
-        ellipse(p.position.x, p.position.y, size);
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
       }
-      
-      // Add text overlay
-      drawTextOverlay();
-    }
-    
-    function updateConnections(mousePos, mouseActive) {
-      // Create connections between particles
-      for (let i = 0; i < particles.length; i++) {
-        for (let j = i + 1; j < particles.length; j++) {
-          let p1 = particles[i];
-          let p2 = particles[j];
-          let d = p5.Vector.dist(p1.position, p2.position);
-          
-          if (d < maxDistance) {
-            // Adjust opacity based on distance
-            let alpha = map(d, 0, maxDistance, 0.8, 0);
-            stroke(220, 70, 100, alpha);
-            
-            // Adjust stroke weight based on distance
-            let sw = map(d, 0, maxDistance, 2, 0.5);
-            strokeWeight(sw);
-            
-            // Draw connection line
-            line(p1.position.x, p1.position.y, p2.position.x, p2.position.y);
-            
-            // Data packet animation along connections
-            if (random() < 0.02) {
-              connections.push({
-                start: p1.position.copy(),
-                end: p2.position.copy(),
-                position: 0,
-                speed: random(0.02, 0.08),
-                color: color(random(180, 240), 80, 100)
-              });
-            }
-          }
+
+      body {
+        font-family: 'Inter', sans-serif;
+        background-color: var(--gray-900);
+        color: white;
+        line-height: 1.5;
+        min-height: 100vh;
+      }
+
+      .container {
+        max-width: 80rem;
+        margin: 0 auto;
+        padding: 0 1rem;
+      }
+
+      /* Hero Section */
+      .hero {
+        padding: 6rem 0;
+        text-align: center;
+        overflow: hidden;
+        position: relative;
+      }
+
+      .hero h1 {
+        font-size: clamp(2.5rem, 5vw, 3.75rem);
+        font-weight: 700;
+        margin-bottom: 1.5rem;
+        background: linear-gradient(to right, var(--blue-400), var(--purple-600));
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent;
+      }
+
+      .hero p {
+        font-size: 1.25rem;
+        color: var(--gray-300);
+        max-width: 48rem;
+        margin: 0 auto 2rem;
+      }
+
+      .cta-button {
+        display: inline-flex;
+        align-items: center;
+        padding: 0.75rem 2rem;
+        background-color: var(--blue-600);
+        color: white;
+        text-decoration: none;
+        border-radius: 0.375rem;
+        font-weight: 500;
+        transition: background-color 0.2s;
+      }
+
+      .cta-button:hover {
+        background-color: var(--blue-700);
+      }
+
+      .cta-button i {
+        margin-left: 0.5rem;
+      }
+
+      /* Process Section */
+      .processes {
+        padding: 4rem 0;
+      }
+
+      .processes h2 {
+        font-size: 1.875rem;
+        text-align: center;
+        margin-bottom: 3rem;
+      }
+
+      .process-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 2rem;
+        padding: 0 1rem;
+      }
+
+      .process-card {
+        background-color: var(--gray-800);
+        padding: 1.5rem;
+        border-radius: 0.5rem;
+        transform: translateY(0);
+        transition: transform 0.2s;
+      }
+
+      .process-card:hover {
+        transform: scale(1.05);
+      }
+
+      .process-card i {
+        color: var(--blue-400);
+        margin-bottom: 1rem;
+      }
+
+      .process-card h3 {
+        font-size: 1.25rem;
+        margin-bottom: 0.5rem;
+      }
+
+      .process-card p {
+        color: var(--gray-400);
+        margin-bottom: 1rem;
+      }
+
+      .process-card .results {
+        color: var(--green-400);
+        font-weight: 600;
+      }
+
+      /* Sectors Section */
+      .sectors {
+        background-color: var(--gray-800);
+        padding: 4rem 0;
+      }
+
+      .sectors h2 {
+        font-size: 1.875rem;
+        text-align: center;
+        margin-bottom: 3rem;
+      }
+
+      .sector-tags {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 1rem;
+        padding: 0 1rem;
+      }
+
+      .sector-tag {
+        background-color: var(--gray-700);
+        padding: 0.75rem 1.5rem;
+        border-radius: 9999px;
+        font-size: 0.875rem;
+        font-weight: 500;
+        transition: background-color 0.2s;
+        cursor: pointer;
+      }
+
+      .sector-tag:hover {
+        background-color: var(--gray-600);
+      }
+
+      /* Contact Section */
+      .contact {
+        padding: 4rem 0;
+        text-align: center;
+      }
+
+      .contact h2 {
+        font-size: 1.875rem;
+        margin-bottom: 1rem;
+      }
+
+      .contact p {
+        color: var(--gray-400);
+        margin-bottom: 2rem;
+      }
+
+      .contact-email {
+        display: inline-flex;
+        align-items: center;
+        color: var(--blue-400);
+        text-decoration: none;
+        transition: color 0.2s;
+      }
+
+      .contact-email:hover {
+        color: var(--blue-600);
+      }
+
+      .contact-email i {
+        margin-right: 0.5rem;
+      }
+
+      @media (max-width: 768px) {
+        .process-grid {
+          grid-template-columns: 1fr;
+        }
+
+        .sector-tags {
+          gap: 0.5rem;
+        }
+
+        .sector-tag {
+          padding: 0.5rem 1rem;
         }
       }
-      
-      // Update and draw data packets
-      for (let i = connections.length - 1; i >= 0; i--) {
-        let c = connections[i];
-        c.position += c.speed;
-        
-        if (c.position > 1) {
-          connections.splice(i, 1);
-        } else {
-          let x = lerp(c.start.x, c.end.x, c.position);
-          let y = lerp(c.start.y, c.end.y, c.position);
-          
-          noStroke();
-          fill(c.color);
-          ellipse(x, y, 6);
-        }
-      }
-    }
-    
-    function drawTextOverlay() {
-      // Title text
-      textAlign(CENTER, CENTER);
-      textSize(width > 800 ? 60 : 40);
-      fill(210, 10, 100, 0.9);
-      textStyle(BOLD);
-      text("NEXT-GEN AI", width/2, height/3);
-      
-      // Subtitle
-      textSize(width > 800 ? 24 : 18);
-      fill(210, 10, 90, 0.7);
-      textStyle(NORMAL);
-      text("Powering the future of intelligent solutions", width/2, height/3 + (width > 800 ? 70 : 50));
-      
-      // Instructions
-      textSize(16);
-      fill(210, 10, 80, 0.5);
-      text("Click and drag to interact with the network", width/2, height - 50);
-    }
-    
-    function windowResized() {
-      resizeCanvas(windowWidth, windowHeight);
-    }
-  </script>
-</body>
+    </style>
+  </head>
+  <body>
+    <div class="hero">
+      <div class="container">
+        <h1>Transform Your Business with AI</h1>
+        <p>Leverage cutting-edge artificial intelligence to optimize your business processes and drive innovation across multiple sectors.</p>
+        <a href="mailto:daniel@bucled.com" class="cta-button">
+          Get Started
+          <i data-lucide="arrow-right"></i>
+        </a>
+      </div>
+    </div>
+
+    <div class="processes">
+      <div class="container">
+        <h2>AI-Powered Process Automation</h2>
+        <div class="process-grid">
+          <div class="process-card">
+            <i data-lucide="factory"></i>
+            <h3>Process Automation</h3>
+            <p>Automate repetitive tasks and workflows</p>
+            <div class="results">73% reduction in processing time</div>
+          </div>
+          <div class="process-card">
+            <i data-lucide="bar-chart"></i>
+            <h3>Data Analysis</h3>
+            <p>Extract actionable insights from your data</p>
+            <div class="results">45% increase in decision accuracy</div>
+          </div>
+          <div class="process-card">
+            <i data-lucide="briefcase"></i>
+            <h3>Document Processing</h3>
+            <p>Intelligent document handling and analysis</p>
+            <div class="results">85% faster document processing</div>
+          </div>
+          <div class="process-card">
+            <i data-lucide="brain"></i>
+            <h3>Predictive Analytics</h3>
+            <p>Forecast trends and optimize operations</p>
+            <div class="results">32% improvement in resource allocation</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="sectors">
+      <div class="container">
+        <h2>Industries We Serve</h2>
+        <div class="sector-tags">
+          <div class="sector-tag">Retail</div>
+          <div class="sector-tag">Logistics</div>
+          <div class="sector-tag">Energy</div>
+          <div class="sector-tag">Drones</div>
+          <div class="sector-tag">Healthcare</div>
+          <div class="sector-tag">Legal</div>
+          <div class="sector-tag">Regulatory</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="contact">
+      <div class="container">
+        <h2>Ready to Transform Your Business?</h2>
+        <p>Contact us to discover how AI can revolutionize your operations</p>
+        <a href="mailto:daniel@bucled.com" class="contact-email">
+          <i data-lucide="mail"></i>
+          daniel@bucled.com
+        </a>
+      </div>
+    </div>
+
+    <script>
+      // Initialize Lucide icons
+      lucide.createIcons();
+    </script>
+  </body>
 </html>
